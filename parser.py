@@ -1,6 +1,5 @@
 from tokenizer import Tokenizer
 
-
 class Parser:
     """
     Parses a string into an AST.
@@ -43,10 +42,60 @@ class Parser:
         return self.program()
 
     def program(self):
-        return {"type": "Program", "body": self.literal()}
+        """
+        Main entry point.
+
+        Program
+            : StatementList
+            ;
+        """
+        return {"type": "Program", "body": self.statement_list()}
+
+    def statement_list(self):
+        """
+        StatementList
+            : Statement
+            : StatementList Statement
+            ;
+        """
+        list = [self.statement()]
+
+        while self._lookahead:
+            print(self._lookahead)
+            list.append(self.statement())
+
+        return list
+
+    def statement(self):
+        """
+        Statement
+            : ExpressionStatement
+            ;
+        """
+        return self.expression_statement()
+
+    def expression_statement(self):
+        """
+        ExpressionStatement
+            : Expression ';'
+            ;
+        """
+        expression = self.expression()
+        self._eat(";")
+        return {"type": "ExpressionStatement", "expression": expression}
+
+    def expression(self):
+        """
+        Expression
+            : Literal
+            ;
+        """
+        return self.literal()
 
     def _eat(self, tokenType):
         token = self._lookahead
+        print(tokenType)
+        print(token)
 
         if token == False:
             print("Unexpected end of input")
@@ -75,7 +124,7 @@ class Parser:
 
 if __name__ == "__main__":
     parser = Parser()
-    program = "  'foo'"
+    program = "  'foo';"
     ast = parser.parse(program)
 
     print(ast)
