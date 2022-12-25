@@ -6,6 +6,8 @@ SPECS = [
     ('"[^"]*"', "STRING"),
     ("'[^']*'", "STRING"),
     (";", ";"),
+    ("{", "{"),
+    ("}", "}"),
 ]
 
 
@@ -32,6 +34,16 @@ class Tokenizer:
 
     get_next_token() -> Node|Raise
     """
+
+    def _match(self, regexp, string):
+        """Look for matched regep in string."""
+        matched = re.match(regexp, string)
+        if matched:
+            group = matched.group()
+            self._cursor += len(group)
+            return group
+        else:
+            return None
 
     # Initializing
     def run(self, string):
@@ -60,16 +72,6 @@ class Tokenizer:
     def isEOF(self):
         """Wheter the tokenizer reached EOF."""
         return self._cursor == len(self._string)
-
-    def _match(self, regexp, string):
-        """Look for matched regep in string."""
-        matched = re.match(regexp, string)
-        if matched:
-            group = matched.group()
-            self._cursor += len(group)
-            return group
-        else:
-            return None
 
     # Obtains next token.
     def get_next_token(self):

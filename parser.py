@@ -1,4 +1,6 @@
 from tokenizer import Tokenizer
+from pprint import pprint
+
 
 class Parser:
     """
@@ -30,6 +32,19 @@ class Parser:
         self._string = ""
         self._tokenizer = Tokenizer()
 
+    def _eat(self, tokenType):
+        token = self._lookahead
+
+        if token == False:
+            print("Unexpected end of input")
+
+        if token["type"] != tokenType:
+            print("Unexpected token")
+
+        self._lookahead = self._tokenizer.get_next_token()
+
+        return token
+
     def parse(self, string):
         """
         Parse recursively starting from the main entry point, the Program:
@@ -51,7 +66,7 @@ class Parser:
         """
         return {"type": "Program", "body": self.statement_list()}
 
-    def statement_list(self):
+    def statement_list(self, stopLookahead=False):
         """
         StatementList
             : Statement
@@ -60,8 +75,7 @@ class Parser:
         """
         list = [self.statement()]
 
-        while self._lookahead:
-            print(self._lookahead)
+        while self._lookahead and self._lookahead["type"] != stopLookahead:
             list.append(self.statement())
 
         return list
@@ -70,9 +84,33 @@ class Parser:
         """
         Statement
             : ExpressionStatement
+            : BlockStatement
             ;
         """
-        return self.expression_statement()
+        l_type = self._lookahead["type"]
+
+        if l_type == "{":
+            return self.block_statement()
+        else:
+            return self.expression_statement()
+
+    def block_statement(self):
+        """
+        BlockStatement
+            : '{' OptStatementList '}'
+            ;
+        """
+        self._eat("{")
+
+        body = ""
+        if self._lookahead["type"] != "}":
+            body = self.statement_list("}")
+        else:
+            body = []
+
+        self._eat("}")
+
+        return {"type": "BlockStatement", "body": body}
 
     def expression_statement(self):
         """
@@ -92,21 +130,6 @@ class Parser:
         """
         return self.literal()
 
-    def _eat(self, tokenType):
-        token = self._lookahead
-        print(tokenType)
-        print(token)
-
-        if token == False:
-            print("Unexpected end of input")
-
-        if token["type"] != tokenType:
-            print("Unexpected token")
-
-        self._lookahead = self._tokenizer.get_next_token()
-
-        return token
-
     def literal(self):
         if self._lookahead["type"] == "NUMBER":
             return self.numericLiteral()
@@ -124,7 +147,7 @@ class Parser:
 
 if __name__ == "__main__":
     parser = Parser()
-    program = "  'foo';"
+    program = "{ 42; 'hello'; }"
     ast = parser.parse(program)
 
-    print(ast)
+    pprint(ast, sort_dicts=False)
