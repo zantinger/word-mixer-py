@@ -1,13 +1,10 @@
 import re
 
 SPECS = [
-    ("\s+", "EMPTY"),
-    ("\d+", "NUMBER"),
-    ('"[^"]*"', "STRING"),
-    ("'[^']*'", "STRING"),
-    (";", ";"),
+    ('[^({|}|\|)]*', "STRING"),
     ("{", "{"),
     ("}", "}"),
+    ("\|", "|"),
 ]
 
 
@@ -43,7 +40,7 @@ class Tokenizer:
             self._cursor += len(group)
             return group
         else:
-            return None
+            return matched
 
     # Initializing
     def run(self, string):
@@ -83,6 +80,11 @@ class Tokenizer:
 
             for regexp, token_type in SPECS:
                 token_value = self._match(regexp, string)
+                # print("----")
+                # print(token_type)
+                # print(token_value)
+                # print(string)
+
 
                 if token_value and token_type == "EMPTY":
                     return self.get_next_token()

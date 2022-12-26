@@ -91,6 +91,9 @@ class Parser:
 
         if l_type == "{":
             return self.block_statement()
+        elif l_type == "|":
+            self._eat("|")
+            return self.statement()
         else:
             return self.expression_statement()
 
@@ -119,7 +122,7 @@ class Parser:
             ;
         """
         expression = self.expression()
-        self._eat(";")
+        # self._eat(";")
         return {"type": "ExpressionStatement", "expression": expression}
 
     def expression(self):
@@ -144,10 +147,3 @@ class Parser:
         token = self._eat("NUMBER")
         return {"type": "NumericLiteral", "value": int(token["value"])}
 
-
-if __name__ == "__main__":
-    parser = Parser()
-    program = "{ 42; 'hello'; }"
-    ast = parser.parse(program)
-
-    pprint(ast, sort_dicts=False)
